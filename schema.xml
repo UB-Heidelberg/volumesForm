@@ -1,0 +1,59 @@
+<!-- 
+  * plugins/generic/volumesForm/schema.xml
+  *
+  * VolumeFormPlugin DB XML schema.
+  *
+   -->
+<schema version="0.2">
+	<!-- 
+		 *
+		 * TABLE volumes
+		 *
+		  -->
+	<table name="volumes">
+		<field name="volume_id" type="I8">
+			<KEY />
+			<AUTOINCREMENT />
+		</field>
+		<field name="context_id" type="I8">
+			<NOTNULL />
+		</field>
+		<field name="path" type="C2" size="255">
+			<NOTNULL />
+		</field>
+		<field name="image" type="X" />
+		<descr>List of volumes for a press.</descr>
+	</table>
+	<!-- 
+		  *
+		  * TABLE volume_settings
+		  *
+		   -->
+	<table name="volume_settings">
+		<field name="volume_id" type="I8">
+			<NOTNULL />
+		</field>
+		<field name="locale" type="C2" size="14">
+			<NOTNULL />
+			<DEFAULT VALUE="" />
+		</field>
+		<field name="setting_name" type="C2" size="255">
+			<NOTNULL />
+		</field>
+		<field name="setting_value" type="X" />
+		<field name="setting_type" type="C2" size="6">
+			<NOTNULL />
+			<descr>(bool|int|float|string|object)</descr>
+		</field>
+		<descr>Volume settings.</descr>
+		<index name="volume_settings_id">
+			<col>volume_id</col>
+		</index>
+		<index name="volume_settings_pkey">
+			<col>volume_id</col>
+			<col>locale</col>
+			<col>setting_name</col>
+			<UNIQUE />
+		</index>
+	</table>
+</schema>

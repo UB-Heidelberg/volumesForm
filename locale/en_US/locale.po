@@ -1,0 +1,71 @@
+msgid "plugins.generic.volumesForm.volumeTitle"
+msgstr "Volumes"
+
+msgid "catalog.sortBy.titleAsc"
+msgstr "Add Volume"
+
+msgid "grid.volume.name"
+msgstr "Title"
+
+msgid "grid.volume.description"
+msgstr "Description"
+
+msgid "grid.volume.path"
+msgstr "Path"
+
+msgid "grid.volume.pathExists"
+msgstr "This path already exists!"
+
+msgid "grid.volume.ppn"
+msgstr "PPN"
+
+msgid "volume.coverImage"
+msgstr "Cover Image"
+
+msgid "grid.volume.volumeDetails"
+msgstr "Volume Details"
+
+msgid "grid.volume.urlWillBe"
+msgstr "This volume's URL will be: {$sampleUrl}"
+
+msgid "catalog.sortBy.titleAsc"
+msgstr "Title (A-Z)"
+
+msgid "catalog.sortBy.titleDesc"
+msgstr "Title (Z-A)"
+
+msgid "catalog.sortBy.datePublishedAsc"
+msgstr "Publication date (oldest first)"
+
+msgid "catalog.sortBy.datePublishedDesc"
+msgstr "Publication date (newest first)"
+
+msgid "plugins.generic.volumesForm.desc"
+msgstr "This plugin creates a new tab "Volumes" under the menu item "Press"."
+
+msgid "plugins.generic.volumesForm.noneCreated"
+msgstr "No volumes yet"
+
+msgid "grid.action.addVolume"
+msgstr "Werk hinzufügen"
+
+msgid "plugins.generic.volumesForm.title"
+msgstr "Volume Form Tab Plugin"
+
+msgid "plugins.generic.volumesForm.description"
+msgstr "This Plugin creates a tab to add volumes to the press settings."
+
+msgid "plugins.generic.volumesForm.grid.title"
+msgstr "Volumes"
+
+msgid "volume.volume"
+msgstr "Volume"
+
+msgid "volumes.browseTitles"
+msgstr "{$numTitles} Titles"
+
+msgid "volumes.noTitlesSection"
+msgstr "No titles published in this section."
+
+msgid "catalog.sortBy.volumeDescription"
+msgstr "Choose how to order books of this volume."

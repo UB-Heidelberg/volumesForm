@@ -1,0 +1,74 @@
+msgid "plugins.generic.volumesForm.volumeTitle"
+msgstr "Mehrbändige Werke"
+
+msgid "grid.action.addVolume"
+msgstr "Werk hinzufügen"
+
+msgid "grid.volume.volumeDetails"
+msgstr "Angaben zum Werk"
+
+msgid "grid.volume.name"
+msgstr "Titel"
+
+msgid "grid.volume.description"
+msgstr "Beschreibung"
+
+msgid "grid.volume.path"
+msgstr "Pfad"
+
+msgid "grid.volume.pathExists"
+msgstr "Diser Pfad existiert bereits!"
+
+msgid "grid.volume.ppn"
+msgstr "PPN"
+
+msgid "volume.coverImage"
+msgstr "Titelbild"
+
+msgid "grid.volume.urlWillBe"
+msgstr "Die URL des mehrbändigen Werkes." 
+
+msgid "plugins.generic.volumesForm.noneCreated"
+msgstr "Noch keine mehrbändigen Werke"
+
+msgid "catalog.sortBy.titleAsc"
+msgstr "Titel (A-Z)"
+
+msgid "catalog.sortBy.titleDesc"
+msgstr "Titel (Z-A)"
+
+msgid "catalog.sortBy.datePublishedAsc"
+msgstr "Erscheinungsdatum (älteste zuerst)"
+
+msgid "catalog.sortBy.datePublishedDesc"
+msgstr "Erscheinungsdatum (neueste zuerst)"
+
+msgid "plugins.generic.volumesForm.desc"
+msgstr "Dieses Plugin stellt ein neues Tab "Mehrbändige Werke" unter dem Menüpunkt "Presse" zur Verfügung."
+
+msgid "submission.submit.selectVolume"
+msgstr "Mehrbändiges Werk auswählen"
+
+msgid "volume.volume"
+msgstr "Mehrbändiges Werk"
+
+msgid "plugins.generic.volumesForm.title"
+msgstr "Mehrbändige-Werke-Plugin"
+
+msgid "plugins.generic.volumesForm.description"
+msgstr "Dieses Plugin stellt einen Tab für das Anlegen von mehrbändigen Werken zur Verfügung."
+
+msgid "plugins.generic.volumesForm.grid.title"
+msgstr "Mehrbändige Werke"
+
+msgid "volumes.browseTitles"
+msgstr "{$numTitles} Titel"
+
+msgid "volumes.noTitlesSection"
+msgstr "In dieser Rubrik wurden bisher keine Titel veröffentlicht."
+
+
+msgid "catalog.sortBy.volumeDescription"
+msgstr "Wählen Sie aus, in welcher Reihenfolge die mehrbändigen Werke angezeigt werden sollen."
+
+
