@@ -1,0 +1,134 @@
+msgid "plugins.generic.volumesForm.volumeTitle"
+msgstr "Volumes"
+
+msgid "grid.action.addVolume"
+msgstr "Add Volume"
+
+msgid "grid.volume.name"
+msgstr "Title"
+
+msgid "grid.volume.volumeDetails"
+msgstr "Volume Details"
+
+msgid "grid.volume.description"
+msgstr "Description"
+
+msgid "grid.volume.path"
+msgstr "Path"
+
+msgid "grid.volume.pathExists"
+msgstr "This path already exists!"
+
+msgid "grid.volume.ppn"
+msgstr "PPN"
+
+msgid "volume.coverImage"
+msgstr "Cover Image"
+
+msgid "grid.volume.urlWillBe"
+msgstr "This volume's URL will be: {$sampleUrl}"
+
+msgid "plugins.generic.volumesForm.noneCreated"
+msgstr "No volumes yet"
+
+msgid "catalog.sortBy.titleAsc"
+msgstr "Title (A-Z)"
+
+msgid "catalog.sortBy.titleDesc"
+msgstr "Title (Z-A)"
+
+msgid "catalog.sortBy.datePublishedAsc"
+msgstr "Publication date (oldest first)"
+
+msgid "catalog.sortBy.datePublishedDesc"
+msgstr "Publication date (newest first)"
+
+msgid "catalog.sortBy.volumePostionAsc"
+msgstr "Volume position (lowest first)"
+
+msgid "catalog.sortBy.volumePostionDesc"
+msgstr "Volume position (highest first)"
+
+msgid "plugins.generic.volumesForm.desc"
+msgstr "This plugin creates a new tab \"Volumes\" under the menu item \"Press\"."
+
+msgid "submission.submit.selectVolume"
+msgstr "Choose Volume"
+
+msgid "plugins.generic.volumesForm.title"
+msgstr "Volume Form Tab Plugin"
+
+msgid "plugins.generic.volumesForm.description"
+msgstr "This Plugin creates a tab to add volumes to the press settings."
+
+msgid "plugins.generic.volumesForm.grid.title"
+msgstr "Volumes"
+
+msgid "volume.volume"
+msgstr "Volume"
+
+msgid "volumes.browseTitles"
+msgstr "{$numTitles} Titles"
+
+msgid "volumes.noTitlesSection"
+msgstr "No titles published in this section."
+
+msgid "catalog.sortBy.volumeDescription"
+msgstr "Choose how to order parts of this volume."
+
+msgid "grid.volume.courseOfPublication"
+msgstr "Course of publication"
+
+msgid "grid.volume.publisher"
+msgstr "Publisher"
+
+msgid "grid.volume.volumeOrder"
+msgstr "Order of monographs"
+
+msgid "volume.volumePosition"
+msgstr "Volume Position"
+
+msgid "volume.furtherParts"
+msgstr "Further parts"
+
+msgid "plugins.generic.volumesForm.settings.userGroups"
+msgstr "Contributors"
+
+msgid "plugins.generic.volumesForm.settings.userGroupsDescription"
+msgstr "In some cases, contributors must be identified differently depending on their role. Please identify the appropriate roles."
+
+msgid "plugins.generic.volumesForm.settings.chooseAuthor"
+msgstr "Authors"
+
+msgid "plugins.generic.volumesForm.settings.chooseEditor"
+msgstr "Editors"
+
+msgid "plugins.generic.volumesForm.settings.optionChooseAuthor"
+msgstr "Select the roles that should be identified as authors."
+
+msgid "plugins.generic.volumesForm.settings.optionChooseEditor"
+msgstr "Select the roles that should be identified as editors."
+
+msgid "plugins.generic.volumesForm.catalog.authors"
+msgstr "Authors"
+
+msgid "plugins.generic.volumesForm.catalog.author"
+msgstr "Author"
+
+msgid "plugins.generic.volumesForm.catalog.editors"
+msgstr "Editors"
+
+msgid "plugins.generic.volumesForm.catalog.editor"
+msgstr "Editor"
+
+msgid "plugins.generic.volumesForm.catalog.volume"
+msgstr "Volume"
+
+msgid "plugins.generic.volumesForm.catalog.isbn"
+msgstr "ISBN"
+
+msgid "plugins.generic.volumesForm.catalog.isbn10"
+msgstr "ISBN-10: "
+
+msgid "plugins.generic.volumesForm.catalog.isbn13"
+msgstr "ISBN-13: "

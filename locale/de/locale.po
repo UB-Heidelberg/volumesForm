@@ -1,0 +1,134 @@
+msgid "plugins.generic.volumesForm.volumeTitle"
+msgstr "Mehrbändige Werke"
+
+msgid "grid.action.addVolume"
+msgstr "Werk hinzufügen"
+
+msgid "grid.volume.name"
+msgstr "Titel"
+
+msgid "grid.volume.volumeDetails"
+msgstr "Angaben zum Werk"
+
+msgid "grid.volume.description"
+msgstr "Beschreibung"
+
+msgid "grid.volume.path"
+msgstr "Pfad"
+
+msgid "grid.volume.pathExists"
+msgstr "Dieser Pfad existiert bereits!"
+
+msgid "grid.volume.ppn"
+msgstr "PPN"
+
+msgid "volume.coverImage"
+msgstr "Titelbild"
+
+msgid "grid.volume.urlWillBe"
+msgstr "Die URL des mehrbändigen Werkes lautet: {$sampleUrl}"
+
+msgid "plugins.generic.volumesForm.noneCreated"
+msgstr "Noch keine mehrbändigen Werke"
+
+msgid "catalog.sortBy.titleAsc"
+msgstr "Titel (A-Z)"
+
+msgid "catalog.sortBy.titleDesc"
+msgstr "Titel (Z-A)"
+
+msgid "catalog.sortBy.datePublishedAsc"
+msgstr "Erscheinungsdatum (älteste zuerst)"
+
+msgid "catalog.sortBy.datePublishedDesc"
+msgstr "Erscheinungsdatum (neueste zuerst)"
+
+msgid "catalog.sortBy.volumePostionAsc"
+msgstr "Bandnummer (niedrigste zuerst)"
+
+msgid "catalog.sortBy.volumePostionDesc"
+msgstr "Bandnummer (höchste zuerst)"
+
+msgid "plugins.generic.volumesForm.desc"
+msgstr "Dieses Plugin stellt ein neues Tab \"Mehrbändige Werke\" unter dem Menüpunkt \"Presse\" zur Verfügung."
+
+msgid "submission.submit.selectVolume"
+msgstr "Mehrbändiges Werk auswählen"
+
+msgid "plugins.generic.volumesForm.title"
+msgstr "Mehrbändige-Werke-Plugin"
+
+msgid "plugins.generic.volumesForm.description"
+msgstr "Dieses Plugin stellt einen Tab für das Anlegen von mehrbändigen Werken zur Verfügung."
+
+msgid "plugins.generic.volumesForm.grid.title"
+msgstr "Mehrbändige Werke"
+
+msgid "volume.volume"
+msgstr "Mehrbändiges Werk"
+
+msgid "volumes.browseTitles"
+msgstr "{$numTitles} Titel"
+
+msgid "volumes.noTitlesSection"
+msgstr "In dieser Rubrik wurden bisher keine Titel veröffentlicht."
+
+msgid "catalog.sortBy.volumeDescription"
+msgstr "Wählen Sie aus, in welcher Reihenfolge die Teilbände angezeigt werden sollen."
+
+msgid "grid.volume.courseOfPublication"
+msgstr "Erscheinungsverlauf"
+
+msgid "grid.volume.publisher"
+msgstr "Verlag"
+
+msgid "grid.volume.volumeOrder"
+msgstr "Reihenfolge der Teilbände"
+
+msgid "volume.volumePosition"
+msgstr "Bandnummer"
+
+msgid "volume.furtherParts"
+msgstr "Weitere Bände"
+
+msgid "plugins.generic.volumesForm.settings.userGroups"
+msgstr "Mitwirkende"
+
+msgid "plugins.generic.volumesForm.settings.userGroupsDescription"
+msgstr "Die Mitwirkenden müssen ihrer Funktion zugeordnet werden können. Bitte weisen Sie die Rollen die entsprechenden Funktionen zu."
+
+msgid "plugins.generic.volumesForm.settings.chooseAuthor"
+msgstr "Autoren"
+
+msgid "plugins.generic.volumesForm.settings.chooseEditor"
+msgstr "Herausgeber"
+
+msgid "plugins.generic.volumesForm.settings.optionChooseAuthor"
+msgstr "Bitte wählen Sie die Rollen, die als Autoren behandelt werden sollen."
+
+msgid "plugins.generic.volumesForm.settings.optionChooseEditor"
+msgstr "Bitte wählen Sie die Rollen, die als Herausgeber behandelt werden sollen."
+
+msgid "plugins.generic.volumesForm.catalog.authors"
+msgstr "Autoren"
+
+msgid "plugins.generic.volumesForm.catalog.author"
+msgstr "Autor"
+
+msgid "plugins.generic.volumesForm.catalog.editors"
+msgstr "Herausgeber"
+
+msgid "plugins.generic.volumesForm.catalog.editor"
+msgstr "Herausgeber"
+
+msgid "plugins.generic.volumesForm.catalog.volume"
+msgstr "Band"
+
+msgid "plugins.generic.volumesForm.catalog.isbn"
+msgstr "ISBN"
+
+msgid "plugins.generic.volumesForm.catalog.isbn10"
+msgstr "ISBN-10: "
+
+msgid "plugins.generic.volumesForm.catalog.isbn13"
+msgstr "ISBN-13: "

@@ -1,31 +1,48 @@
 <?php
 
 /**
- * @file plugins/generic/volumesForm/controllers/grid/VolumeGridHandler.inc.php
+ * @file plugins/generic/volumesForm/controllers/grid/VolumeGridHandler.php
  *
  * @class VolumeGridHandler
  *
  * @brief Handle volume grid requests.
  */
 
-import('lib.pkp.classes.controllers.grid.GridHandler');
-import('plugins.generic.volumesForm.controllers.grid.VolumeGridRow');
-import('plugins.generic.volumesForm.controllers.grid.VolumeGridCellProvider');
+namespace APP\plugins\generic\volumesForm\controllers\grid;
+
+
+use APP\notification\NotificationManager;
+use APP\plugins\generic\volumesForm\classes\VolumeDAO;
+use APP\plugins\generic\volumesForm\controllers\grid\form\VolumeForm;
+use APP\plugins\generic\volumesForm\VolumesFormPlugin;
+use PKP\controllers\grid\GridColumn;
+use PKP\controllers\grid\GridHandler;
+use PKP\core\JSONMessage;
+use PKP\core\PKPRequest;
+use PKP\db\DAO;
+use PKP\db\DAORegistry;
+use PKP\file\TemporaryFileManager;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
+use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\PKPSiteAccessPolicy;
+use PKP\security\Role;
 
 class VolumeGridHandler extends GridHandler
 {
-
-	static $plugin;
+	/** @var VolumesFormPlugin $plugin */
+    private VolumesFormPlugin $plugin;
 
 	/**
 	 * Constructor
 	 */
-	function __construct()
+	public function __construct(VolumesFormPlugin $plugin)
 	{
-		parent::__construct();
+        parent::__construct();
+        $this->plugin = $plugin;
 		$this->addRoleAssignment(
-			array(ROLE_ID_MANAGER, ROLE_ID_SITE_ADMIN),
-			array('fetchGrid', 'fetchRow', 'addVolume', 'editVolume', 'updateVolume', 'deleteVolume', 'uploadImage')
+			[Role::ROLE_ID_MANAGER, Role::ROLE_ID_SITE_ADMIN],
+			['fetchGrid', 'fetchRow', 'addVolume', 'editVolume', 'updateVolume', 'deleteVolume', 'uploadImage']
 		);
 	}
 
@@ -35,31 +52,15 @@ class VolumeGridHandler extends GridHandler
 	/**
 	 * @copydoc PKPHandler::authorize()
 	 */
-
-	function authorize($request, &$args, $roleAssignments) {
+	public function authorize($request, &$args, $roleAssignments)
+    {
 		if ($request->getContext()) {
-			import('lib.pkp.classes.security.authorization.ContextAccessPolicy');
 			$this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
 		} else {
-			import('lib.pkp.classes.security.authorization.PKPSiteAccessPolicy');
 			$this->addPolicy(new PKPSiteAccessPolicy($request, null, $roleAssignments));
 		}
 		return parent::authorize($request, $args, $roleAssignments);
 	}
-
-
-	//
-	// Getters/Setters
-	//
-	/**
-	 * Set the Volume form plugin.
-	 * @param $plugin VolumesFormPlugin
-	 */
-	static function setPlugin($plugin)
-	{
-		self::$plugin = $plugin;
-	}
-
 
 	//
 	// Overridden template methods
@@ -69,36 +70,30 @@ class VolumeGridHandler extends GridHandler
 	 * Configure the grid.
 	 * @copydoc Gridhandler::initialize()
 	 */
-	function initialize($request, $args = null)
+	public function initialize($request, $args = null): void
 	{
 		parent::initialize($request, $args);
 		$press = $request->getPress();
-
-		// Load locale components.
-		AppLocale::requireComponents(LOCALE_COMPONENT_PKP_MANAGER, LOCALE_COMPONENT_PKP_SUBMISSION);
 
 		// Set the grid title.
 		$this->setTitle('plugins.generic.volumesForm.volumeTitle');
 		$this->setEmptyRowText('plugins.generic.volumesForm.noneCreated');
 
 		// Get the items and add the data to the grid.
+        /** @var VolumeDAO $volumeDao */
 		$volumeDao = DAORegistry::getDAO('VolumeDAO');
 		$volumeIterator = $volumeDao->getByPressId($press->getId());
 
 		$gridData = array();
 		while ($volume = $volumeIterator->next()) {
-
 			$volumeId = $volume->getId();
-			$gridData[$volumeId] = array(
-				'title' => $volume->getLocalizedTitle(),
-			);
+			$gridData[$volumeId] = ['title' => $volume->getLocalizedTitle(),];
 		}
 
 		$this->setGridDataElements($gridData);
 
 		// Add grid-level actions
 		$router = $request->getRouter();
-		import('lib.pkp.classes.linkAction.request.AjaxModal');
 		$this->addAction(
 			new LinkAction(
 				'addVolume',
@@ -139,7 +134,7 @@ class VolumeGridHandler extends GridHandler
 	/**
 	 * @copydoc GridHandler::getJSHandler()
 	 */
-	public function getJSHandler()
+	public function getJSHandler(): string
 	{
 		return '$.pkp.plugins.generic.volumesForm.VolumeGridHandler';
 	}
@@ -149,16 +144,16 @@ class VolumeGridHandler extends GridHandler
 	 * Used to update the site context switcher upon create/delete.
 	 * @return array
 	 */
-	function getPublishChangeEvents()
+	public function getPublishChangeEvents(): array
 	{
-		return array('updateSidebar');
+		return ['updateSidebar'];
 	}
 
 	/**
 	 * Get the row handler - override the default row handler
 	 * @return VolumeGridRow
 	 */
-	function getRowInstance()
+	public function getRowInstance(): VolumeGridRow
 	{
 		return new VolumeGridRow();
 	}
@@ -166,13 +161,16 @@ class VolumeGridHandler extends GridHandler
 	//
 	// Public Volume Grid Actions
 	//
-	/**
-	 * An action to add a new volume.
-	 * @param $args array
-	 * @param $request PKPRequest
-	 */
-	function addVolume($args, $request)
-	{
+    /**
+     * An action to add a new volume.
+     *
+     * @param $args    array
+     * @param $request PKPRequest
+     *
+     * @return JSONMessage
+     */
+	public function addVolume(array $args, PKPRequest $request): JSONMessage
+    {
 		// Calling editVolume with an empty ID will add
 		// a new volume.
 		return $this->editVolume($args, $request);
@@ -184,16 +182,15 @@ class VolumeGridHandler extends GridHandler
 	 * @param $request PKPRequest
 	 * @return JSONMessage JSON object
 	 */
-	function editVolume($args, $request)
+	public function editVolume(array $args, PKPRequest $request): JSONMessage
 	{
 		// Check if volume exists.
-		$volumeId = isset($args['volumeId']) ? $args['volumeId'] : null;
+		$volumeId = $args['volumeId'] ?? null;
 		$contextId = $request->getContext()->getId();
 		$this->setupTemplate($request);
 
 		// Initialize volume form.
-		import('plugins.generic.volumesForm.controllers.grid.form.VolumeForm');
-		$volumeForm = new VolumeForm(self::$plugin, $contextId, $volumeId);
+		$volumeForm = new VolumeForm($this->plugin, $contextId, $volumeId);
 		$volumeForm->initData();
 		return new JSONMessage(true, $volumeForm->fetch($request));
 	}
@@ -204,14 +201,13 @@ class VolumeGridHandler extends GridHandler
 	 * @param $request PKPRequest
 	 * @return JSONMessage JSON object
 	 */
-	function updateVolume($args, $request)
+	public function updateVolume(array $args, PKPRequest $request): JSONMessage
 	{
 		// Update the volume and validate before.
-		$volumeId = $request->getUserVar('volumeId');
+		$volumeId = (int) $request->getUserVar('volumeId');
 		$contextId = $request->getContext()->getId();
 
-		import('plugins.generic.volumesForm.controllers.grid.form.VolumeForm');
-		$volumeForm = new VolumeForm(self::$plugin, $contextId, $volumeId);
+		$volumeForm = new VolumeForm($this->plugin, $contextId, $volumeId);
 		$volumeForm->readInputData();
 
 		if ($volumeForm->validate()) {
@@ -224,27 +220,28 @@ class VolumeGridHandler extends GridHandler
 		} else {
 
 			// Present errors.
-			$json = new JSONMessage(true, $volumeForm->fetch($request));
-			return $json->getString();
+            return new JSONMessage(true, $volumeForm->fetch($request));
 		}
 	}
 
 	/**
 	 * Delete a volume.
-	 * @param $args array
+	 *
+	 * @param $args    array
 	 * @param $request PKPRequest
+	 *
 	 * @return JSONMessage JSON object
 	 */
-	function deleteVolume($args, $request)
+	public function deleteVolume(array $args, PKPRequest $request): JSONMessage
 	{
 		$press = $request->getPress();
-		$volumeDao = DAORegistry::getDAO('VolumeDAO');
+		/** @var VolumeDAO $volumeDao */
+        $volumeDao = DAORegistry::getDAO('VolumeDAO');
 		$volume = $volumeDao->getById($request->getUserVar('volumeId'), $press->getId());
-		if (isset($volume)) {
+		if (isset($volume) && !$volume->hasPublishedParts()) {
 			$volumeDao->deleteObject($volume);
 			return DAO::getDataChangedEvent($volume->getId());
 		} else {
-			AppLocale::requireComponents(LOCALE_COMPONENT_PKP_MANAGER);
 			return new JSONMessage(false, __('manager.setup.errorDeletingItem'));
 		}
 	}
@@ -255,11 +252,10 @@ class VolumeGridHandler extends GridHandler
 	 * @param $args array
 	 * @return JSONMessage JSON object
 	 */
-	function uploadImage($args, $request)
+	public function uploadImage(array $args, PKPRequest $request): JSONMessage
 	{
 		$user = $request->getUser();
 
-		import('lib.pkp.classes.file.TemporaryFileManager');
 		$temporaryFileManager = new TemporaryFileManager();
 		$temporaryFile = $temporaryFileManager->handleUpload('uploadedFile', $user->getId());
 		if ($temporaryFile) {
