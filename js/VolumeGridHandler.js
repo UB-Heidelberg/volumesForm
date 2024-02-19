@@ -43,18 +43,17 @@
 	 */
 	$.pkp.plugins.generic.volumesForm.VolumeGridHandler.prototype.refreshGridHandler =
 		function (sourceElement, event, opt_elementId, opt_fetchedAlready) {
-			var params;
-			params = this.getFetchExtraParams();
+			var params = this.getFetchExtraParams();
 
 			// Check if subclasses already handled the fetch of new elements.
 			if (!opt_fetchedAlready) {
 				params.submissionId = opt_elementId;
 				$.get(this.fetchGridUrl_, params,
-					this.callbackWrapper(this.replaceGridResponseHandler_), 'json');
+					this.callbackWrapper(this.replaceGridResponseHandler_), "json");
 			}
 			
 			// Let the calling context (page?) know that the grids are being redrawn.
-			this.trigger('gridRefreshRequested');
+			this.trigger("gridRefreshRequested");
 			this.publishChangeEvents();
 		};
 		

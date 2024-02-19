@@ -43,43 +43,75 @@
 
     <h3>{translate key="grid.volume.volumeDetails"}</h3>
 
+    {fbvFormSection title="volume.coverImage"}
+        {include file="controllers/fileUploadContainer.tpl" id="plupload"}
+        <input type="hidden" name="temporaryFileId" id="temporaryFileId" value="" />
+    {/fbvFormSection}
+
+     {* Image. *}
+    {if $image}
+        {fbvFormSection}
+        {capture assign="altTitle"}{translate key="submission.currentCoverImage"}{/capture}
+            <img class="pkp_helpers_container_center" src="{$baseUrl}/plugins/generic/volumesForm/cover/{$image['thumbnailName']}" alt="{$volume->getLocalizedTitle()|escape|default: 'null'}" />
+        {/fbvFormSection}
+    {/if}
+
     {fbvFormSection title="grid.volume.name" for="title" required="true"}
     {fbvElement type="text" multilingual="true" name="title" value=$title id="title" required="true"}
     {/fbvFormSection}
 
-    {* Path. *} 
-    {fbvFormSection title="grid.volume.path" required=true for="path"}
-    {capture assign="instruct"}
-        {url router=$smarty.const.ROUTE_PAGE page="catalog" op="volume" path="path"}
-        {translate key="grid.volume.urlWillBe" sampleUrl=$sampleUrl}
-    {/capture}
-    {fbvElement type="text" id="path" value=$path maxlength="32" label=$instruct subLabelTranslate=false}
-    {/fbvFormSection}
+
 
     {fbvFormSection title="grid.volume.description" for="context"}
     {fbvElement type="textarea" multilingual="true" id="description" value=$description rich=true}
     {/fbvFormSection}
 
-    {fbvFormSection title="grid.volume.ppn" for="context"}
-    {fbvElement type="text" multilingual="false" id="ppn" value=$ppn rich=false}
+    {fbvFormSection title="grid.volume.ppn" for="ppn"}
+    {fbvElement type="text" id="ppn" value=$ppn rich=false}
     {/fbvFormSection}
 
-    {fbvFormSection label="catalog.sortBy" description="catalog.sortBy.volumeDescription" for="sortOption"}
+    {fbvFormSection for="isbn" title="grid.catalogEntry.isbn"}
+    {fbvElement type="text" label="grid.catalogEntry.isbn13.description" value=$isbn13 id="isbn13" size=$fbvStyles.size.MEDIUM inline=true}
+    {fbvElement type="text" label="grid.catalogEntry.isbn10.description" value=$isbn10 id="isbn10" size=$fbvStyles.size.MEDIUM inline=true}
+    {/fbvFormSection}
+
+    {fbvFormSection label="grid.volume.volumeOrder" description="catalog.sortBy.volumeDescription" for="sortOption"}
     {fbvElement type="select" id="sortOption" from=$sortOptions selected=$sortOption translate=false}
     {/fbvFormSection}
 
-    {fbvFormSection title="volume.coverImage"}
-    {include file="controllers/fileUploadContainer.tpl" id="plupload"}
-    <input type="hidden" name="temporaryFileId" id="temporaryFileId" value="" />
+    {fbvFormSection label="series.series" for="seriesId"}
+    {fbvElement type="select" id="seriesId" from=$seriesOptions selected=$seriesId translate=false}
     {/fbvFormSection}
 
-    {* Image. *}
-    {if $image}
-        {fbvFormSection}
-        {capture assign="altTitle"}{translate key="submission.currentCoverImage"}{/capture}
-        <img src="{$publicFilesDir}/volumes/{$image['name']}" alt="{$image.altText|escape|default:''}" />
-        {/fbvFormSection}
-    {/if}
+    {fbvFormSection title="submission.submit.seriesPosition" for="seriesPosition"}
+    {fbvElement type="text" label="submission.submit.seriesPosition.description" id="seriesPosition" value=$seriesPosition rich=false}
+    {/fbvFormSection}
+
+    {fbvFormSection title="grid.volume.publisher" for="publisher"}
+    {fbvElement type="text" id="publisher" value=$publisher rich=false}
+    {/fbvFormSection}
+
+    {fbvFormSection title="manager.settings.location" for="location"}
+    {fbvElement type="text" id="location" value=$location rich=false}
+    {/fbvFormSection}
+
+    {fbvFormSection title="grid.volume.courseOfPublication" for="courseOfPublication"}
+    {fbvElement type="text" id="courseOfPublication" value=$courseOfPublication rich=false}
+    {/fbvFormSection}
+
+     {* Path. *}
+    {fbvFormSection title="grid.volume.path" required=true for="path"}
+    {capture assign="instruct"}
+        {translate key="grid.volume.urlWillBe" sampleUrl=$sampleUrl}
+        {if $path}
+            {url router=$smarty.const.ROUTE_PAGE page="catalog" op="volume" path=$path}
+        {else}
+            {url router=$smarty.const.ROUTE_PAGE page="catalog" op="volume" path="path"}
+        {/if}
+
+    {/capture}
+    {fbvElement type="text" id="path" value=$path maxlength="32" label=$instruct subLabelTranslate=false}
+    {/fbvFormSection}
 
     <p><span class="formRequired">{translate key="common.requiredField"}</span></p>
     {fbvFormButtons}
