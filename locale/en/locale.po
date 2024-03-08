@@ -132,3 +132,6 @@ msgstr "ISBN-10: "
 
 msgid "plugins.generic.volumesForm.catalog.isbn13"
 msgstr "ISBN-13: "
+
+msgid "plugins.generic.volumesForm.catalog.partOf"
+msgstr "Part of"

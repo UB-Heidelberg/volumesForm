@@ -156,10 +156,6 @@ class VolumeForm extends Form
 			$this->setData('ppn', $volume->getPPN());
             $this->setData('isbn13', $volume->getData('isbn13'));
             $this->setData('isbn10', $volume->getData('isbn10'));
-            $this->setData('seriesId', $volume->getData('seriesId'));
-            $this->setData('seriesPosition', $volume->getData('seriesPosition'));
-            $this->setData('publisher', $volume->getData('publisher'));
-            $this->setData('location', $volume->getData('location'));
             $this->setData('courseOfPublication', $volume->getData('courseOfPublication'));
 
 			// Get sort options of the monographs.
@@ -208,10 +204,6 @@ class VolumeForm extends Form
                 'isbn13',
                 'isbn10',
                 'sortOption',
-                'seriesId',
-                'seriesPosition',
-                'publisher',
-                'location',
                 'courseOfPublication'
             )
         );
@@ -286,10 +278,6 @@ class VolumeForm extends Form
         $volume->setPath($this->getData('path'));
         $volume->setData('isbn13', $this->getData('isbn13'));
         $volume->setData('isbn10', $this->getData('isbn10'));
-        $volume->setData('seriesId', $this->getData('seriesId'));
-        $volume->setData('seriesPosition', $this->getData('seriesPosition'));
-        $volume->setData('publisher', $this->getData('publisher'));
-        $volume->setData('location', $this->getData('location'));
         $volume->setData('courseOfPublication', $this->getData('courseOfPublication'));
 
 		// Update or insert the volume object

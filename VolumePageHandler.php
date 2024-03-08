@@ -20,7 +20,9 @@ use APP\template\TemplateManager;
 use PKP\config\Config;
 use PKP\core\PKPRequest;
 use PKP\db\DAORegistry;
+use PKP\plugins\PluginRegistry;
 use PKP\security\Role;
+use PKP\userGroup\UserGroup;
 
 class VolumePageHandler extends Handler
 {
@@ -69,13 +71,18 @@ class VolumePageHandler extends Handler
 
 		// Check if volume exist by path.
 		$volumePath = $args[0];
-		if (!$volumeDao->volumeExistsByPath($volumePath)) {
+		if (!$volumePath || !$volumeDao->volumeExistsByPath($volumePath)) {
             $request->getDispatcher()->handle404();
         }
 
         // Get volume by path.
         $volume = $volumeDao->getByPath($volumePath, $contextId);
         $volumeId = $volume->getData('id');
+
+        // Check if volume has published parts
+        if (!$volume->hasPublishedParts()) {
+            $request->getDispatcher()->handle404();
+        }
 
         // Get all published submissions which are part of a certain volume. Also collect editors, authors and series.
         $publishedPublications = $volume->getPublishedParts();
@@ -86,14 +93,6 @@ class VolumePageHandler extends Handler
         $editorsGroups = $this->plugin->getEditorGroups($context->getId());
         $authorUserGroups = Repo::userGroup()->getCollector()->filterByRoleIds([Role::ROLE_ID_AUTHOR])->filterByContextIds([$context->getId()])->getMany()->remember();
         $seriesArray = [];
-        $volumeSeriesId = $volume->getData('seriesId');
-        $volumeSeriesPosition = $volume->getData('seriesPosition');
-        if ($volumeSeriesId) {
-            $seriesArray[$volumeSeriesId] = [];
-            if ($volumeSeriesPosition) {
-                $seriesArray[$volumeSeriesId][] = $volumeSeriesPosition;
-            }
-        }
 
         /** @var Publication $publication */
         foreach ($publishedPublications as $publication) {
@@ -107,8 +106,6 @@ class VolumePageHandler extends Handler
                 if ($seriesPosition) {
                     $seriesArray[$seriesId][] = $seriesPosition;
                 }
-            } elseif ($volumeSeriesId && $seriesPosition) {
-                $seriesArray[$volumeSeriesId][] = $volumeSeriesPosition;
             }
 
             //Authors & Editors
@@ -116,15 +113,27 @@ class VolumePageHandler extends Handler
             /** @var Author $publicationAuthor */
             foreach ($publicationAuthors as $publicationAuthor) {
                 $userGroupId = $publicationAuthor->getUserGroupId();
-                switch (true) {
-                    case in_array($userGroupId, $editorsGroups):
+                $hdEnhancedRolesPlugin = PluginRegistry::getPlugin('generic', 'hdenhancedrolesplugin');
+                if ($hdEnhancedRolesPlugin && $hdEnhancedRolesPlugin->getEnabled() ) {
+                    /** @var UserGroup $userGroup */
+                    $userGroup = Repo::userGroup()->get($userGroupId, $contextId);
+                    if ($userGroup->getData('hdEnhancedRoles::showAsEditor')) {
                         $editorNames[] = $publicationAuthor->getFullName();
-                        break;
-                    case in_array($userGroupId, $authorsGroups):
+                    }
+                    if ($userGroup->getData('hdEnhancedRoles::showAsAuthor')) {
                         $authorNames[] = $publicationAuthor->getFullName();
-                        break;
-                    default:
-                        break;
+                    }
+                } else {
+                    switch (true) {
+                        case in_array($userGroupId, $editorsGroups):
+                            $editorNames[] = $publicationAuthor->getFullName();
+                            break;
+                        case in_array($userGroupId, $authorsGroups):
+                            $authorNames[] = $publicationAuthor->getFullName();
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
             //Submissions
@@ -173,8 +182,6 @@ class VolumePageHandler extends Handler
             ->assign('volumeTitle', $volume->getLocalizedTitle())
             ->assign('volumeDescription', $volume->getLocalizedDescription())
             ->assign('volumePath', $volumePath)
-            ->assign('publisher', $volume->getData('publisher')?:$context->getLocalizedName())
-            ->assign('location', $volume->getData('location')?:$context->getData('location'))
             ->assign('seriesArray', $seriesArray)
             ->assign('editors', $editorNames)
             ->assign('authors', $authorNames)
@@ -183,7 +190,7 @@ class VolumePageHandler extends Handler
             ->assign('authorUserGroups', $authorUserGroups)
             ->assign( 'volumeCover', $basePath . $volume->getImage()['name'] )
             ->assign( 'volumeCoverThumbnail', $basePath . $volume->getImage()['thumbnailName'] )
-            ->display($this->plugin->getTemplateResource('catalogVolumes.tpl'));
+            ->display($this->plugin->getTemplateResource('/frontend/catalogVolumes.tpl'));
 	}
 
 	/**

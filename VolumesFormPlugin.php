@@ -13,9 +13,9 @@ namespace APP\plugins\generic\volumesForm;
 use APP\core\Application;
 use APP\core\Services;
 use APP\facades\Repo;
-use APP\plugins\generic\volumesForm\classes\Volume;
 use APP\plugins\generic\volumesForm\classes\VolumeDAO;
 use APP\plugins\generic\volumesForm\controllers\grid\VolumeGridHandler;
+use APP\plugins\metadata\dc11\filter\Dc11SchemaPublicationFormatAdapter;
 use APP\press\Press;
 use APP\publication\Publication;
 use APP\submission\Submission;
@@ -24,18 +24,17 @@ use Exception;
 use PKP\components\forms\FieldSelect;
 use PKP\components\forms\FieldText;
 use PKP\components\forms\FormComponent;
-use PKP\config\Config;
 use PKP\core\JSONMessage;
 use PKP\core\PKPApplication;
 use PKP\db\DAORegistry;
 use PKP\facades\Locale;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
+use PKP\metadata\MetadataDescription;
 use PKP\oai\OAIRecord;
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\Hook;
-use PKP\submission\Collector;
-use PKP\submission\PKPSubmission;
+use PKP\plugins\PluginRegistry;
 use PKP\template\PKPTemplateManager;
 use PKPString;
 
@@ -103,17 +102,21 @@ class VolumesFormPlugin extends GenericPlugin
 			Hook::add('quicksubmitform::execute', [$this, 'metadataExecute']);
 
             // Hook for add volume data to frontend book or chapter page
-            Hook::add('CatalogBookHandler::book', $this->changeBookTemplateData(...));
-            Hook::add('Templates::Catalog::Book::Details', $this->displayVolumeEnhancement(...));
+            Hook::add('CatalogBookHandler::book', $this->addToBookTemplate(...));
+            Hook::add('Templates::Catalog::Book::Details', $this->displayBookDetailsEnhancement(...));
+            Hook::add('Templates::Catalog::Book::Volume', $this->displayBookMainVolumeTitle(...));
+            Hook::add('Templates::Catalog::Chapter::Volume', $this->displayChapterDetailsEnhancement(...));
 
-            // Hook for add volume data to series page
-            Hook::add('TemplateManager::display', [$this, 'showVolumePartsInSeries']);
+            // Hook for add volume data to frontend catalog
+            Hook::add('TemplateManager::display', $this->addToCatalogTemplate(...));
+            Hook::add('Templates::Catalog::MonographSummary::Volume', $this->displayVolumeTitleInCatalog(...));
 
             // Hook for citation change in CSL-Plugin
             Hook::add('CitationStyleLanguage::citation', [$this, 'changeCitationData']);
 
-            // Hook for OAI Record
-            Hook::add('OAIDAO::_returnRecordFromRow', [$this, 'changeOaiData']);
+            // Hook for change OAI Record
+            Hook::add('Dc11SchemaPublicationFormatAdapter::extractMetadataFromDataObject', $this->changeOaiData(...));
+
 
 			// Load stylesheet for volume pages.
 			$request = Application::get()->getRequest();
@@ -425,7 +428,7 @@ class VolumesFormPlugin extends GenericPlugin
 		return Application::get()->getRequest()->getBaseUrl() . DIRECTORY_SEPARATOR . $this->getPluginPath() . DIRECTORY_SEPARATOR . 'js';
 	}
 
-    public function changeBookTemplateData($hookName, $params): bool
+    public function addToBookTemplate($hookName, $params): bool
     {
         $request = $params[0];
         /** @var Submission $submission */
@@ -445,26 +448,8 @@ class VolumesFormPlugin extends GenericPlugin
                     return false;
                 }
                 $templateMgr->assign('volume', $volume);
-                $templateMgr->assign('locale', Locale::getLocale());
-
-                //Title
-                $publicationTitles = $publication->getTitles();
-                $volumeTitles = $volume->getTitles();
-                foreach( $publicationTitles as $locale => $title ) {
-                    $volumeTitle = $volumeTitles[$locale];
-                    if($volumePostion = $publication->getData('volumePosition')){
-                        $volumeTitle = PKPString::concatTitleFields([$volumeTitle, $volumePostion]);
-                    }
-                    $title = PKPString::concatTitleFields([$volumeTitle, $title]);
-                    $publication->setData('title', $title, $locale);
-                }
-
-                //Series
-                if($volume->getData('seriesId') && !$publication->getData('seriesId')){
-                    $publication->setData('seriesId', (int) $volume->getData('seriesId') );
-                    $series = Repo::section()->get($publication->getData('seriesId'), $submission->getData('contextId'));
-                    $templateMgr->assign('series', $series);
-                }
+                $templateMgr->assign('volumeTitle', $volume->getLocalizedTitle());
+                $templateMgr->assign('volumePosition', $publication->getData('volumePosition'));
             }
         }
         return false;
@@ -488,43 +473,22 @@ class VolumesFormPlugin extends GenericPlugin
             $volume = $volumeDao->getById((int) $publication->getData('volumeId'));
 
             //Title
-            $title = $citationData->title;
-            $fullTitle = $volume->getTitle($locale);
-            if($publication->getData('volumePosition')){
-                $fullTitle .= ', ' . $publication->getData('volumePosition');
-            }
-            $citationData->title = PKPString::concatTitleFields([$fullTitle, $title]);
-
-            //Series
-            if($volume->getData('seriesId') && !$publication->getData('seriesId')){
-                $seriesId = $volume->getData('seriesId');
-                $series = $seriesId ? Repo::section()->get($seriesId) : null;
-                if ($series) {
-                    $citationData->{'collection-title'} = htmlspecialchars(trim($series->getLocalizedFullTitle()));
-                    if($publication->getData('seriesPosition')){
-                        $citationData->{'collection-number'} = htmlspecialchars($publication->getData('seriesPosition'));
-                    } elseif ($volume->getData('seriesPosition')){
-                        $citationData->{'collection-number'} = htmlspecialchars($volume->getData('seriesPosition'));
-                    }
-                    $citationData->{'collection-editor'} = htmlspecialchars($series->getEditorsString());
-                    $onlineISSN = $series->getOnlineISSN();
-                    if (!empty($onlineISSN)) {
-                        $citationData->serialNumber[] = htmlspecialchars($onlineISSN);
-                    }
-                    $printISSN = $series->getPrintISSN();
-                    if (!empty($printISSN)) {
-                        $citationData->serialNumber[] = htmlspecialchars($printISSN);
-                    }
+            if($citationData->type === 'chapter') {
+                $title = $citationData->{'container-title'};
+                $fullTitle = $volume->getTitle($locale);
+                if($publication->getData('volumePosition')){
+                    $fullTitle .= ', ' . $publication->getData('volumePosition');
                 }
+                $citationData->{'container-title'} = PKPString::concatTitleFields([$fullTitle, $title]);
+            } else {
+                $title = $citationData->title;
+                $fullTitle = $volume->getTitle($locale);
+                if($publication->getData('volumePosition')){
+                    $fullTitle .= ', ' . $publication->getData('volumePosition');
+                }
+                $citationData->title = PKPString::concatTitleFields([$fullTitle, $title]);
             }
-            //Publisher
-            if($volume->getData('publisher')){
-                $citationData->publisher = htmlspecialchars($volume->getData('publisher'));
-            }
-            //Location
-            if($volume->getData('location')){
-                $citationData->{'publisher-place'} = $volume->getData('location');
-            }
+
             //ISBN
             $serialNumber =& $citationData->serialNumber;
             if($volume->getData('isbn10')){
@@ -538,12 +502,54 @@ class VolumesFormPlugin extends GenericPlugin
         return false;
     }
 
-    public function displayVolumeEnhancement($hookName, $params): bool
+    public function displayBookDetailsEnhancement($hookName, $params): bool
     {
         $smarty =& $params[1];
         $output =& $params[2];
 
-        $output .= $smarty->fetch($this->getTemplateResource('bookDetailsVolumeEnhancement.tpl'));
+        $output .= $smarty->fetch($this->getTemplateResource('/frontend/bookDetailsVolumeEnhancement.tpl'));
+
+        return FALSE;
+    }
+
+    public function displayBookMainVolumeTitle($hookName, $params): bool
+    {
+        $smarty =& $params[1];
+        $output =& $params[2];
+
+        $output .= $smarty->fetch($this->getTemplateResource('/frontend/bookMainVolumeEnhancement.tpl'));
+
+        return FALSE;
+    }
+
+    public function displayChapterDetailsEnhancement($hookName, $params): bool
+    {
+        $smarty =& $params[1];
+        $output =& $params[2];
+
+        $output .= $smarty->fetch($this->getTemplateResource('/frontend/chapterDetailsVolumeEnhancement.tpl'));
+
+        return FALSE;
+    }
+
+    public function addToCatalogTemplate(string $hookName, array $params): bool
+    {
+        if ($params[1] === 'frontend/pages/catalog.tpl' || $params[1] === 'frontend/pages/catalogSeries.tpl') {
+            $templateMgr =& $params[0];
+            /** @var VolumeDAO $volumeDao */
+            $volumeDao = DAORegistry::getDAO('VolumeDAO');
+            $templateMgr->assign('volumeDao', $volumeDao);
+        }
+
+        return false;
+    }
+
+    public function displayVolumeTitleInCatalog($hookName, $params): bool
+    {
+        $smarty =& $params[1];
+        $output =& $params[2];
+
+        $output .= $smarty->fetch($this->getTemplateResource('/frontend/catalogVolumeEnhancement.tpl'));
 
         return FALSE;
     }
@@ -565,33 +571,37 @@ class VolumesFormPlugin extends GenericPlugin
     {
         $actions = parent::getActions($request, $actionArgs);
 
-        if (!$this->getEnabled()) {
+        if (!$this->getEnabled() ) {
             return $actions;
         }
 
-        $router = $request->getRouter();
-        $linkAction = new LinkAction(
-            'settings',
-            new AjaxModal(
-                $router->url(
-                    $request,
-                    null,
-                    null,
-                    'manage',
-                    null,
-                    [
-                        'verb' => 'settings',
-                        'plugin' => $this->getName(),
-                        'category' => 'generic',
-                    ]
+        $hdEnhancedRolesPlugin = PluginRegistry::getPlugin('generic', 'hdenhancedrolesplugin');
+        if (!$hdEnhancedRolesPlugin || !$hdEnhancedRolesPlugin->getEnabled() )
+        {
+            $router = $request->getRouter();
+            $linkAction = new LinkAction(
+                'settings',
+                new AjaxModal(
+                    $router->url(
+                        $request,
+                        null,
+                        null,
+                        'manage',
+                        null,
+                        [
+                            'verb' => 'settings',
+                            'plugin' => $this->getName(),
+                            'category' => 'generic',
+                        ]
+                    ),
+                    $this->getDisplayName()
                 ),
-                $this->getDisplayName()
-            ),
-            __('manager.plugins.settings'),
-            null
-        );
+                __('manager.plugins.settings'),
+                null
+            );
 
-        array_unshift($actions, $linkAction);
+            array_unshift($actions, $linkAction);
+        }
 
         return $actions;
     }
@@ -618,181 +628,17 @@ class VolumesFormPlugin extends GenericPlugin
         return parent::manage($args, $request);
     }
 
-    public function showVolumePartsInSeries($hookName, $args): bool
-    {
-        $request = Application::get()->getRequest();
-        $page = $request->getRequestedPage();
-        $op = $request->getRequestedOp();
-
-        if ($page === 'catalog' && $op === 'series') {
-            /** @var TemplateManager $templateMgr */
-            $templateMgr =& $args[0];
-            $template =& $args[1];
-            $output =& $args[2];
-            $context = $request->getContext();
-            $series = $templateMgr->tpl_vars['series']->value;
-            /** @var VolumeDAO $volumeDao */
-            $volumeDao = DAORegistry::getDAO('VolumeDAO');
-            $volumes = $volumeDao->getBySeriesId((int) $series->getId())->toArray();
-
-            if (count($volumes) > 0) {
-                $orderOption = $series->getSortOption() ? $series->getSortOption() : Collector::ORDERBY_DATE_PUBLISHED . '-' . Collector::ORDER_DIR_DESC;
-                [$orderBy, $orderDir] = explode('-', $orderOption);
-
-                $count = $context->getData('itemsPerPage') ? $context->getData('itemsPerPage') : Config::getVar('interface', 'items_per_page');
-                if ($templateMgr->tpl_vars['prevPage']->value !== null) {
-                    $pageNumber = $templateMgr->tpl_vars['prevPage']->value + 1;
-                } else {
-                    $pageNumber = 1;
-                }
-                $offset = $pageNumber > 1 ? ($pageNumber - 1) * $count : 0;
-
-                $publishedSubmissions = Repo::submission()
-                    ->getCollector()
-                    ->filterByContextIds([$context->getId()])
-                    ->filterBySeriesIds([$series->getId()])
-                    ->filterByStatus([PKPSubmission::STATUS_PUBLISHED])
-                    ->orderBy($orderBy, $orderDir == SORT_DIRECTION_ASC ? 'ASC' : 'DESC')
-                    ->orderByFeatured()
-                    ->getMany()
-                    ->toArray();
-
-                $seriesOrder = $series->getData('sortOption');
-                $countWithoutVolumes = count($publishedSubmissions);
-
-                /** @var Volume $volume */
-                foreach ($volumes as $volume) {
-                    $publishedPublications = [];
-                    $publishedPublications = $volume->getPublishedParts($seriesOrder);
-                    foreach ($publishedPublications as $publishedPublication) {
-                        $submissionId = (int) $publishedPublication->getData('submissionId');
-                        if (!array_key_exists($submissionId, $publishedSubmissions)) {
-                            $publishedSubmissions[$submissionId] = Repo::submission()->get($submissionId);
-                        }
-                    }
-                }
-                $countWithVolumes = count($publishedSubmissions);
-
-                //sort
-                if ($countWithVolumes > $countWithoutVolumes) {
-                    [$orderBy, $orderDir] = explode('-', $seriesOrder);
-                    switch ($orderBy) {
-                        case Collector::ORDERBY_DATE_PUBLISHED:
-                            $publishedSubmissions = $this->sortByDatePublished($publishedSubmissions, $orderDir);
-                            break;
-                        case Collector::ORDERBY_TITLE:
-                            $publishedSubmissions = $this->sortByTitle($publishedSubmissions, $orderDir);
-                            break;
-                        case 'seriesPosition':
-                            $publishedSubmissions = $this->sortBySeriesPosition($publishedSubmissions, $orderDir);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                $total = count($publishedSubmissions);
-                $publishedSubmissions = array_slice($publishedSubmissions, $offset, $count );
-                $submissionsCount = count($publishedSubmissions);
-                $showingStart = $offset + 1;
-                $showingEnd = min($offset + $count, $offset + $submissionsCount);
-
-                $templateMgr->assign('publishedSubmissions', $publishedSubmissions)
-                    ->assign('volumes', $volumes)
-                    ->assign('total', $total)
-                    ->assign('showingStart', $showingStart)
-                    ->assign('showingEnd', $showingEnd);
-            }
-
-
-        }
-
-        return false;
-    }
-
-    private function sortBySeriesPosition(array $submissions, string $orderDir): array
-    {
-        $positions = [];
-        /** @var VolumeDAO $volumeDao */
-        $volumeDao = DAORegistry::getDAO('VolumeDAO');
-        /** @var Submission $submission */
-        foreach ($submissions as $submission) {
-            $publication = $submission->getCurrentPublication();
-            if ($publication->getData('seriesPosition')) {
-                $positions[$submission->getId()] = $publication->getData('seriesPosition');
-            } elseif ($publication->getData('volumeId')) {
-                $volume = $volumeDao->getById($publication->getData('volumeId'));
-                if ($volume->getData('seriesPosition')) {
-                    $positions[$submission->getId()] = $publication->getData('seriesPosition');
-                }
-            } else {
-                $positions[$submission->getId()] = '';
-            }
-        }
-        asort($positions);
-        foreach ($positions as $key => $value) {
-            $positions[$key] = $submissions[$key];
-        }
-        $submissions = $positions;
-
-        if($orderDir === Collector::ORDER_DIR_DESC){
-            $submissions = array_reverse($submissions);
-        }
-
-        return $submissions;
-    }
-
-    private function sortByTitle(array $submissions, string $orderDir): array
-    {
-        $positions = [];
-        /** @var Submission $submission */
-        foreach ($submissions as $submission) {
-            $publication = $submission->getCurrentPublication();
-            $positions[$submission->getId()] = $publication->getLocalizedTitle();
-        }
-        asort($positions);
-        foreach ($positions as $key => $value) {
-            $positions[$key] = $submissions[$key];
-        }
-        $submissions = $positions;
-
-        if($orderDir === Collector::ORDER_DIR_DESC){
-            $submissions = array_reverse($submissions);
-        }
-
-        return $submissions;
-    }
-
-    private function sortByDatePublished(array $submissions, string $orderDir): array
-    {
-        $positions = [];
-        /** @var Submission $submission */
-        foreach ($submissions as $submission) {
-            $publication = $submission->getCurrentPublication();
-            $positions[$submission->getId()] = $publication->getData('datePublished');
-        }
-        asort($positions);
-        foreach ($positions as $key => $value) {
-            $positions[$key] = $submissions[$key];
-        }
-        $submissions = $positions;
-
-        if($orderDir === Collector::ORDER_DIR_DESC){
-            $submissions = array_reverse($submissions);
-        }
-
-        return $submissions;
-    }
-
     public function changeOaiData($hookName, $args): bool
     {
-        /** @var OAIRecord $oairecord */
-        $record = $args[0];
-
+       /** @var Dc11SchemaPublicationFormatAdapter $schemaAdapter */
+        $schemaAdapter = $args[0];
         /** @var Submission $submission */
-        $submission = $record->getData('monograph');
-        $publicationFormat = $record->getData('publicationFormat');
-        $publicationFormat->setData('entryKey', 'UPS');
+        $submission = $args[1];
+        /** @var Press $press */
+        $press = $args[2];
+        /** @var MetadataDescription $metadataDescription */
+        $metadataDescription =& $args[3];
+
         $publication = $submission->getCurrentPublication();
         if ($publication->getData('volumeId')) {
             /** @var VolumeDAO $volumeDao */
@@ -800,15 +646,14 @@ class VolumesFormPlugin extends GenericPlugin
             $volume = $volumeDao->getById($publication->getData('volumeId'));
 
             //Title
-            $publicationTitles = $publication->getTitles();
-            $volumeTitles = $volume->getTitles();
-            foreach ($publicationTitles as $locale => $title) {
-                $volumeTitle = $volumeTitles[$locale];
+           $volumeTitles = $volume->getTitles();
+            foreach ($volumeTitles as $locale => $title) {
                 if($volumePostion = $publication->getData('volumePosition')){
-                    $volumeTitle = PKPString::concatTitleFields([$volumeTitle, $volumePostion]);
+                    $title = PKPString::concatTitleFields([$title, $volumePostion]);
                 }
-                $title = PKPString::concatTitleFields([$volumeTitle, $title]);
-                $publication->setData('title', $title, $locale);
+                $metadataTitle = $metadataDescription->getStatement('dc:title', $locale)[0];
+                $title = PKPString::concatTitleFields([$title, $metadataTitle]);
+                $metadataDescription->addStatement('dc:title', $title, $locale, true);
             }
         }
 

@@ -274,11 +274,6 @@ class VolumeDAO extends DAO
         $additionalFieldNames[] = 'isbn13';
         $additionalFieldNames[] = 'isbn10';
         $additionalFieldNames[] = 'sortOption';
-        $additionalFieldNames[] = 'seriesId';
-        $additionalFieldNames[] = 'seriesPosition';
-        $additionalFieldNames[] = 'publisher';
-        $additionalFieldNames[] = 'location';
-        $additionalFieldNames[] = 'seriesPosition';
         $additionalFieldNames[] = 'courseOfPublication';
 
         return $additionalFieldNames;

@@ -79,22 +79,6 @@
     {fbvElement type="select" id="sortOption" from=$sortOptions selected=$sortOption translate=false}
     {/fbvFormSection}
 
-    {fbvFormSection label="series.series" for="seriesId"}
-    {fbvElement type="select" id="seriesId" from=$seriesOptions selected=$seriesId translate=false}
-    {/fbvFormSection}
-
-    {fbvFormSection title="submission.submit.seriesPosition" for="seriesPosition"}
-    {fbvElement type="text" label="submission.submit.seriesPosition.description" id="seriesPosition" value=$seriesPosition rich=false}
-    {/fbvFormSection}
-
-    {fbvFormSection title="grid.volume.publisher" for="publisher"}
-    {fbvElement type="text" id="publisher" value=$publisher rich=false}
-    {/fbvFormSection}
-
-    {fbvFormSection title="manager.settings.location" for="location"}
-    {fbvElement type="text" id="location" value=$location rich=false}
-    {/fbvFormSection}
-
     {fbvFormSection title="grid.volume.courseOfPublication" for="courseOfPublication"}
     {fbvElement type="text" id="courseOfPublication" value=$courseOfPublication rich=false}
     {/fbvFormSection}
