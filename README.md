@@ -13,9 +13,11 @@ Upon installation the plugin will:
 You need to create a folder "cover" inside the main folder of this plugin.
 Run: php lib/pkp/tools/installPluginVersion.php plugins/generic/volumesForm/version.xml
 
-To get volume title and position on book landing page, integrate this line in your theme monograph_full.tpl:
-{call_hook name="Templates::Catalog::Book::Volume"}  
-To get volume title and position on chapter landing page, integrate this line in your theme chapter.tpl:
-{call_hook name="Templates::Catalog::Chapter::Volume"}
+To get volume title and position on book landing page, integrate this line in your theme monograph_full.tpl:  
+{call_hook name="Templates::Catalog::Book::Volume"} 
+
+To get volume title and position on chapter landing page, integrate this line in your theme chapter.tpl:  
+{call_hook name="Templates::Catalog::Chapter::Volume"}  
+
 To get volume titel and link to volume page in a catalog entry, integrate this line in your theme monograp_summary.tpl:
 {call_hook name="Templates::Catalog::MonographSummary::Volume"}
