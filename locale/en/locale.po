@@ -135,3 +135,12 @@ msgstr "ISBN-13: "
 
 msgid "plugins.generic.volumesForm.catalog.partOf"
 msgstr "Part of"
+
+msgid "plugins.generic.volumesForm.catalog.linkTitle"
+msgstr "To the collective title"
+
+msgid "plugins.generic.volumesForm.catalog.toTheSeries"
+msgstr "To the series"
+
+msgid "plugins.generic.volumesForm.catalog.linkPart"
+msgstr "To the part"

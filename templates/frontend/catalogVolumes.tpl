@@ -7,7 +7,7 @@
      {include file="frontend/components/breadcrumbs_catalog.tpl" type="volume" currentTitle=$volume->getLocalizedTitle()}
 
      {* Title *}
-     <h1 class="title">{$volume->getLocalizedTitle()|escape}</h1>
+     <h2 class="title">{$volume->getLocalizedTitle()|escape}</h2>
 
      {* Contributors *}
      {if count($editors) > 0 || count($authors) > 0}
@@ -54,24 +54,28 @@
      {/if}
 
      {* Count of monographs in this volume *}
-     <div class="monograph_count">
-         {translate key="volumes.browseTitles" numTitles=$total}
-     </div>
- 
+     {if $total}
+         <div class="monograph_count">
+             {translate key="volumes.browseTitles" numTitles=$total}
+         </div>
+     {/if}
+
      {* Description *}
      {assign var="image" value=$volume->getImage()}
      {assign var="description" value=$volumeDescription|strip_unsafe_html}
      <div class="about_section{if $image} has_image{/if}{if $description} has_description{/if}">
-         <div class="image">
-             <div class="cover">
-                 {if $volume->getImage()}
-                     <img src="{$volumeCover}" alt="{$volume->getLocalizedTitle()|escape|default: 'null'}" />
-                 {/if}
+         {if $volume->getImage()}
+            <div class="image">
+                <div class="cover">
+                    <img src="{$volumeCover}" alt="{$volume->getLocalizedTitle()|escape|default: 'null'}" />
+                </div>
+            </div>
+         {/if}
+         {if $description}
+             <div class="description">
+                 {$description|strip_unsafe_html}
              </div>
-         </div>
-         <div class="description">
-             {$description|strip_unsafe_html}
-         </div>
+         {/if}
          {* Course of publication *}
          {if $volume->getData('courseOfPublication')}
              <div class="courseOfPublication">{$volume->getData('courseOfPublication')|escape}</div>
@@ -103,7 +107,7 @@
                  {assign var=series value=$seriesItem['series']}
                  <div class="value sub_item">
                      <h4 class="label series_title">
-                         <a href="{url page="catalog" op="series" path=$series->getPath()}">{$series->getLocalizedFullTitle()|escape}</a>
+                         <a title="{translate key='plugins.generic.volumesForm.catalog.toTheSeries'}" href="{url page="catalog" op="series" path=$series->getPath()}">{$series->getLocalizedFullTitle()|escape}</a>
                      </h4>
                      {if $seriesItem['positions'] || $series->getOnlineISSN() || $series->getPrintISSN()}
                          <ul class="value">

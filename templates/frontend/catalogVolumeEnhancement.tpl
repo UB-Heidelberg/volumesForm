@@ -3,11 +3,11 @@
     <div class="volume">
         {assign var="volumeId" value=$monograph->getCurrentPublication()->getData('volumeId')}
         {assign var="volume" value=$volumeDao->getById($volumeId)}
-        <h3 class="volume_title">
+        <div class="volume_title">
             <span class="label">{translate key="plugins.generic.volumesForm.catalog.partOf"}</span>
-            <a href="{url router=$smarty.const.ROUTE_PAGE page="catalog" op="volume" path=$volume->getPath()}">
+            <a class="value" title="{translate key="plugins.generic.volumesForm.catalog.linkTitle"}" href="{url router=$smarty.const.ROUTE_PAGE page="catalog" op="volume" path=$volume->getPath()}">
                 {$volume->getLocalizedTitle(null, 'html')|strip_unsafe_html}
             </a>
-        </h3>
+        </div>
     </div>
 {/if}

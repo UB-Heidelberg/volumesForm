@@ -103,9 +103,8 @@ class VolumesFormPlugin extends GenericPlugin
 
             // Hook for add volume data to frontend book or chapter page
             Hook::add('CatalogBookHandler::book', $this->addToBookTemplate(...));
-            Hook::add('Templates::Catalog::Book::Details', $this->displayBookDetailsEnhancement(...));
             Hook::add('Templates::Catalog::Book::Volume', $this->displayBookMainVolumeTitle(...));
-            Hook::add('Templates::Catalog::Chapter::Volume', $this->displayChapterDetailsEnhancement(...));
+            Hook::add('Templates::Catalog::Details::Volume', $this->displayBookDetailsEnhancement(...));
 
             // Hook for add volume data to frontend catalog
             Hook::add('TemplateManager::display', $this->addToCatalogTemplate(...));
@@ -518,16 +517,6 @@ class VolumesFormPlugin extends GenericPlugin
         $output =& $params[2];
 
         $output .= $smarty->fetch($this->getTemplateResource('/frontend/bookMainVolumeEnhancement.tpl'));
-
-        return FALSE;
-    }
-
-    public function displayChapterDetailsEnhancement($hookName, $params): bool
-    {
-        $smarty =& $params[1];
-        $output =& $params[2];
-
-        $output .= $smarty->fetch($this->getTemplateResource('/frontend/chapterDetailsVolumeEnhancement.tpl'));
 
         return FALSE;
     }
