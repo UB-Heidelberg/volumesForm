@@ -9,6 +9,11 @@
      {* Title *}
      <h2 class="title">{$volume->getLocalizedTitle()|escape}</h2>
 
+     {* Course of publication *}
+     {if $volume->getData('courseOfPublication')}
+         <div class="courseOfPublication">{$volume->getData('courseOfPublication')|escape}</div>
+     {/if}
+
      {* Contributors *}
      {if count($editors) > 0 || count($authors) > 0}
          <div class="item contributors">
@@ -53,6 +58,24 @@
          </div>
      {/if}
 
+     {* ISBN *}
+     {assign var=isbn10 value=$volume->getData('isbn10')}
+     {assign var=isbn13 value=$volume->getData('isbn13')}
+     {if $isbn10 || $isbn13}
+         <div class="item isbn">
+             {if $isbn10}
+                 <div class="identification_code isbn10">
+                     {translate key="plugins.generic.volumesForm.catalog.isbn10"}{$isbn10|escape}
+                 </div>
+             {/if}
+             {if $isbn13}
+                 <div class="identification_code isbn13">
+                     {translate key="plugins.generic.volumesForm.catalog.isbn13"}{$isbn13|escape}
+                 </div>
+             {/if}
+         </div>
+     {/if}
+
      {* Count of monographs in this volume *}
      {if $total}
          <div class="monograph_count">
@@ -65,7 +88,7 @@
      {assign var="description" value=$volumeDescription|strip_unsafe_html}
      <div class="about_section{if $image} has_image{/if}{if $description} has_description{/if}">
          {if $volume->getImage()}
-            <div class="image">
+            <div class="cover">
                 <div class="cover">
                     <img src="{$volumeCover}" alt="{$volume->getLocalizedTitle()|escape|default: 'null'}" />
                 </div>
@@ -74,27 +97,6 @@
          {if $description}
              <div class="description">
                  {$description|strip_unsafe_html}
-             </div>
-         {/if}
-         {* Course of publication *}
-         {if $volume->getData('courseOfPublication')}
-             <div class="courseOfPublication">{$volume->getData('courseOfPublication')|escape}</div>
-         {/if}
-         {* ISBN *}
-         {assign var=isbn10 value=$volume->getData('isbn10')}
-         {assign var=isbn13 value=$volume->getData('isbn13')}
-         {if $isbn10 || $isbn13}
-             <div class="isbn">
-                 {if $isbn10}
-                     <div class="identification_code isbn10">
-                         {translate key="plugins.generic.volumesForm.catalog.isbn10"}{$isbn10|escape}
-                     </div>
-                 {/if}
-                 {if $isbn13}
-                     <div class="identification_code isbn13">
-                         {translate key="plugins.generic.volumesForm.catalog.isbn13"}{$isbn13|escape}
-                     </div>
-                 {/if}
              </div>
          {/if}
      </div>
