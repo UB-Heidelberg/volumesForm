@@ -145,3 +145,7 @@ msgstr "Zur Reihe"
 msgid "plugins.generic.volumesForm.catalog.linkPart"
 msgstr "Zum Teilband"
 
+msgid "grid.volume.pathAlphaNumeric"
+msgstr "Erlaubt sind nur Alphanumerische Zeichen und - _ ."
+
+
