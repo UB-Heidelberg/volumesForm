@@ -475,9 +475,9 @@ class VolumesFormPlugin extends GenericPlugin
             if (empty($fullTitle)) {
                 $alternateLocale = [];
                 $primaryLocale = $context->getPrimaryLocale();
-                $locale !== $primaryLocale ?? $alternateLocale[] = $primaryLocale;
-                $locale !== 'de' && 'de' !== $primaryLocale ?? $alternateLocale[] = 'de';
-                $locale !== 'en' && 'en' !== $primaryLocale ?? $alternateLocale[] = 'en';
+                if ($locale !== $primaryLocale) $alternateLocale[] = $primaryLocale;
+                if ($locale !== 'de' && 'de' !== $primaryLocale) $alternateLocale[] = 'de';
+                if ($locale !== 'en' && 'en' !== $primaryLocale) $alternateLocale[] = 'en';
                 foreach ($alternateLocale as $aLocale) {
                     if (!empty($volume->getTitle($aLocale))) {
                         $fullTitle = $volume->getTitle($aLocale);
