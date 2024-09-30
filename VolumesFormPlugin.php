@@ -465,22 +465,36 @@ class VolumesFormPlugin extends GenericPlugin
         $publication =& $params[5];
         $locale = Locale::getLocale();
 
-        if($publication->getData('volumeId')){
+        if ($publication->getData('volumeId')){
             /** @var VolumeDAO $volumeDao */
             $volumeDao = DAORegistry::getDAO('VolumeDAO');
             $volume = $volumeDao->getById((int) $publication->getData('volumeId'));
 
             //Title
+            $fullTitle = $volume->getTitle($locale);
+            if (empty($fullTitle)) {
+                $alternateLocale = [];
+                $primaryLocale = $context->getPrimaryLocale();
+                $locale !== $primaryLocale ?? $alternateLocale[] = $primaryLocale;
+                $locale !== 'de' && 'de' !== $primaryLocale ?? $alternateLocale[] = 'de';
+                $locale !== 'en' && 'en' !== $primaryLocale ?? $alternateLocale[] = 'en';
+                foreach ($alternateLocale as $aLocale) {
+                    if (!empty($volume->getTitle($aLocale))) {
+                        $fullTitle = $volume->getTitle($aLocale);
+                        break;
+                    }
+                }
+            }
+
             if($citationData->type === 'chapter') {
                 $title = $citationData->{'container-title'};
-                $fullTitle = $volume->getTitle($locale);
+
                 if($publication->getData('volumePosition')){
                     $fullTitle .= ', ' . $publication->getData('volumePosition');
                 }
                 $citationData->{'container-title'} = PKPString::concatTitleFields([$fullTitle, $title]);
             } else {
                 $title = $citationData->title;
-                $fullTitle = $volume->getTitle($locale);
                 if($publication->getData('volumePosition')){
                     $fullTitle .= ', ' . $publication->getData('volumePosition');
                 }
@@ -489,10 +503,10 @@ class VolumesFormPlugin extends GenericPlugin
 
             //ISBN
             $serialNumber =& $citationData->serialNumber;
-            if($volume->getData('isbn10')){
+            if ($volume->getData('isbn10')){
                 $serialNumber[] = htmlspecialchars($volume->getData('isbn10'));
             }
-            if($volume->getData('isbn13')){
+            if ($volume->getData('isbn13')){
                 $serialNumber[] = htmlspecialchars($volume->getData('isbn13'));
             }
         }
