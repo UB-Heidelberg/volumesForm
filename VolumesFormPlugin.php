@@ -485,18 +485,20 @@ class VolumesFormPlugin extends GenericPlugin
                     }
                 }
             }
+            
+            $volumePositionPrefix = $locale === 'de' ? 'Bd. ' :'vol. ';
 
             if($citationData->type === 'chapter') {
                 $title = $citationData->{'container-title'};
 
                 if($publication->getData('volumePosition')){
-                    $fullTitle .= ', ' . $publication->getData('volumePosition');
+                    $fullTitle .= ', ' . $volumePositionPrefix . $publication->getData('volumePosition');
                 }
                 $citationData->{'container-title'} = PKPString::concatTitleFields([$fullTitle, $title]);
             } else {
                 $title = $citationData->title;
                 if($publication->getData('volumePosition')){
-                    $fullTitle .= ', ' . $publication->getData('volumePosition');
+                    $fullTitle .= ', ' . $volumePositionPrefix . $publication->getData('volumePosition');
                 }
                 $citationData->title = PKPString::concatTitleFields([$fullTitle, $title]);
             }
