@@ -21,3 +21,6 @@ To get volume title and further parts on book and chapter landing page details, 
 
 To get volume titel and link to volume page in a catalog entry, integrate this line in your theme monograp_summary.tpl:
 {call_hook name="Templates::Catalog::MonographSummary::Volume"}
+
+To get volume position in a catalog entry, integrate this line in your theme monograp_summary.tpl:
+{call_hook name="Templates::Catalog::MonographSummary::VolumePosition"}

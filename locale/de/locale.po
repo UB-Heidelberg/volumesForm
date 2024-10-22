@@ -148,4 +148,7 @@ msgstr "Zum Teilband"
 msgid "grid.volume.pathAlphaNumeric"
 msgstr "Erlaubt sind nur Alphanumerische Zeichen und - _ ."
 
+msgid "plugins.generic.volumesForm.catalog.positionPrefix"
+msgstr "Bd. "
+
 

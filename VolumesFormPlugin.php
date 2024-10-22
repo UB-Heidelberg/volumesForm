@@ -108,6 +108,7 @@ class VolumesFormPlugin extends GenericPlugin
             // Hook for add volume data to frontend catalog
             Hook::add('TemplateManager::display', $this->addToCatalogTemplate(...));
             Hook::add('Templates::Catalog::MonographSummary::Volume', $this->displayVolumeTitleInCatalog(...));
+            Hook::add('Templates::Catalog::MonographSummary::VolumePosition', $this->displayVolumePositionInCatalog(...));
 
             // Hook for citation change in CSL-Plugin
             Hook::add('CitationStyleLanguage::citation', [$this, 'changeCitationData']);
@@ -554,6 +555,16 @@ class VolumesFormPlugin extends GenericPlugin
         $output =& $params[2];
 
         $output .= $smarty->fetch($this->getTemplateResource('/frontend/catalogVolumeEnhancement.tpl'));
+
+        return FALSE;
+    }
+
+    public function displayVolumePositionInCatalog($hookName, $params): bool
+    {
+        $smarty =& $params[1];
+        $output =& $params[2];
+
+        $output .= $smarty->fetch($this->getTemplateResource('/frontend/catalogVolumePositionEnhancement.tpl'));
 
         return FALSE;
     }

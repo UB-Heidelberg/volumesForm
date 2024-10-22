@@ -76,13 +76,6 @@
          </div>
      {/if}
 
-     {* Count of monographs in this volume *}
-     {if $total}
-         <div class="monograph_count">
-             {translate key="volumes.browseTitles" numTitles=$total}
-         </div>
-     {/if}
-
      {* Description *}
      {assign var="image" value=$volume->getImage()}
      {assign var="description" value=$volumeDescription|strip_unsafe_html}
@@ -100,6 +93,13 @@
              </div>
          {/if}
      </div>
+
+     {* Count of monographs in this volume *}
+     {if $total}
+         <div class="monograph_count_volume">
+             {translate key="volumes.browseTitles" numTitles=$total}
+         </div>
+     {/if}
 
      {* Series *}
      {if count($seriesArray) > 0}

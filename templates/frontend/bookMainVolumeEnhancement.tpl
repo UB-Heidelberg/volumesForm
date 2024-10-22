@@ -8,7 +8,7 @@
         </div>
         {if $volumePosition}
             <div class="sub_item volume_position">
-                <div class="value">{$volumePosition}</div>
+                <div class="value">{translate key="plugins.generic.volumesForm.catalog.positionPrefix"}{$volumePosition}</div>
             </div>
         {/if}
     </div>

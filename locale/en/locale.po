@@ -147,3 +147,6 @@ msgstr "To the part"
 
 msgid "grid.volume.pathAlphaNumeric"
 msgstr "Only alphanumeric characters and - _ ."
+
+msgid "plugins.generic.volumesForm.catalog.positionPrefix"
+msgstr "vol. "
