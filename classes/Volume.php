@@ -11,6 +11,7 @@ namespace APP\plugins\generic\volumesForm\classes;
 
 use APP\facades\Repo;
 use APP\publication\Publication;
+use APP\submission\Submission;
 use PKP\core\DataObject;
 use PKP\plugins\Hook;
 use PKP\plugins\PluginRegistry;
@@ -390,25 +391,19 @@ class Volume extends DataObject
 
     private function loadParts(): array
     {
-        Hook::add('Publication::Collector', function($hookName, $args) {
-            $q = & $args[0];
-            $q->join('publication_settings as ps', 'p.publication_id', '=', 'ps.publication_id');
-            $q->where('ps.setting_name', 'volumeId');
-        });
-
         $submissions = [];
-
-        $allPublications = Repo::publication()->getCollector()
+        $allSubmissions = Repo::submission()
+            ->getCollector()
             ->filterByContextIds([$this->getContextId()])
             ->getMany();
-        Hook::clear('Publication::Collector');
 
-        foreach ($allPublications as $publication) {
-            if ((string) $publication->getData('volumeId') === (string) $this->getId()) {
-                $submissions[] = Repo::submission()->get($publication->getId());
+        /** @var Submission $submission */
+        foreach ($allSubmissions as $submission) {
+            $publication = $submission->getCurrentPublication();
+            if ($publication && (string) $publication->getData('volumeId') === (string) $this->getId()) {
+                $submissions[] = $submission;
             }
         }
-
 
         return $submissions;
     }
