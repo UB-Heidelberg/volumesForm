@@ -27,7 +27,7 @@ Das mehrbändige Werk selbst verfügt über folgende Felder:
   > https://Domain/press/catalog/volume/Pfad  
   > Pfad darf keine Umlaute, Sonderzeichen (außer - _ .) oder Leerzeichen enthalten.  
    
-Für jedes mehrbändige Werk wird eine Seite mit der Gesamtaufnahme erzeugt, sobald der erste Teilband veröffentlicht ist.
+Für jedes mehrbändige Werk wird eine Seite mit der Gesamtaufnahme erzeugt, sobald der erste Teilband veröffentlicht ist. Eine Vorschau existiert für jene angemeldeten Benutzer, die das Recht haben die Vorschau für einen der Teilbände zu sehen.
 
 ### 1.2 Teilband
 Jeder Submission kann nun analog zur Reihe ein mehrbändiges Werk (Volume) und eine Bandnummer (Volume Position) zugewiesen werden.

@@ -11,6 +11,7 @@ namespace APP\plugins\generic\volumesForm\classes;
 
 use APP\facades\Repo;
 use APP\publication\Publication;
+use APP\submission\Submission;
 use PKP\core\DataObject;
 use PKP\plugins\PluginRegistry;
 use PKP\submission\Collector;
@@ -19,9 +20,27 @@ use PKP\submission\PKPSubmission;
 class Volume extends DataObject
 {
 	private array $published_parts = [];
+
+    private array $parts = [];
     //
 	// Get/set methods
 	//
+
+    /**
+     * Get all parts as submission
+     *
+     * @return array
+     */
+    public function getParts(): array
+    {
+        $parts = $this->parts;
+        if(empty($parts)){
+            $parts = $this->loadParts();
+            $this->parts = $parts;
+        }
+
+        return $parts;
+    }
 
     /**
      * Get all published parts as publications
@@ -367,5 +386,34 @@ class Volume extends DataObject
     public function hasPublishedParts(): bool
     {
         return $this->countPublishedParts() > 0;
+    }
+
+    private function loadParts(): array
+    {
+        $submissions = [];
+        $allSubmissions = Repo::submission()
+            ->getCollector()
+            ->filterByContextIds([$this->getContextId()])
+            ->getMany();
+
+        /** @var Submission $submission */
+        foreach ($allSubmissions as $submission) {
+            $publication = $submission->getCurrentPublication();
+            if ($publication && (string) $publication->getData('volumeId') === (string) $this->getId()) {
+                $submissions[] = $submission;
+            }
+        }
+
+        return $submissions;
+    }
+
+    public function countParts(): int
+    {
+        return count($this->getParts());
+    }
+
+    public function hasParts(): bool
+    {
+        return $this->countParts() > 0;
     }
 }
