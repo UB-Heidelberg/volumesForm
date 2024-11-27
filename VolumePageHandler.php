@@ -82,6 +82,7 @@ class VolumePageHandler extends Handler
 
 
         // Serve 404 or a preview if all parts are unpublished
+        $userCanPreview = false;
         if (!$volume->hasPublishedParts() ) {
             // Serve 404 if all parts are unpublished and no user is logged in
             $user = $request->getUser();
@@ -90,9 +91,8 @@ class VolumePageHandler extends Handler
             }
 
             // Serve 404 if all parts are unpublished and we have a user logged in but the user does not have access to preview at least one part
-            $userCanPreview = false;
             /** @var Submission $submission */
-            foreach ($volume->getParts() as $submission) {
+            foreach ($volume->getSubmissions() as $submission) {
                 if (Repo::submission()->canPreview($user, $submission)) {
                     $userCanPreview = true;
                     break;
@@ -105,7 +105,11 @@ class VolumePageHandler extends Handler
 
 
         // Get all published submissions which are part of a certain volume. Also collect editors, authors and series.
-        $publishedPublications = $volume->getPublishedParts();
+        if ($userCanPreview) {
+            $publishedPublications = $volume->getParts(); //If this is only a preview, show all parts
+        } else {
+            $publishedPublications = $volume->getPublishedParts();
+        }
         $publishedSubmissions = [];
         $editorNames = [];
         $authorNames = [];

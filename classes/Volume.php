@@ -12,20 +12,19 @@ namespace APP\plugins\generic\volumesForm\classes;
 use APP\facades\Repo;
 use APP\publication\Publication;
 use APP\submission\Submission;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use PKP\core\DataObject;
-use PKP\plugins\Hook;
 use PKP\plugins\PluginRegistry;
 use PKP\submission\Collector;
 use PKP\submission\PKPSubmission;
 
 class Volume extends DataObject
 {
-	private array $published_parts = [];
+	private array $published_publications_sorted = [];
 
-    private array $parts = [];
+    private array $all_publications_sorted = [];
+
+    private array $all_submissions = [];
     //
 	// Get/set methods
 	//
@@ -35,19 +34,42 @@ class Volume extends DataObject
      *
      * @return array
      */
-    public function getParts(): array
+    public function getSubmissions(): array
     {
-        $parts = $this->parts;
+        $parts = $this->all_submissions;
         if(empty($parts)){
             $parts = $this->loadParts();
-            $this->parts = $parts;
+            $this->all_submissions = $parts;
         }
 
         return $parts;
     }
 
     /**
-     * Get all published parts as publications
+     * Get all parts as sorted publications
+     *
+     * @param string|null $orderOption
+     *
+     * @return array
+     */
+    public function getParts(?string $orderOption=null): array
+    {
+        if ($orderOption) {
+            $parts = $this->sortParts($orderOption);
+            $this->all_publications_sorted = $parts;
+        } else {
+            $parts = $this->all_publications_sorted;
+            if(empty($parts)){
+                $parts = $this->sortParts($orderOption);
+                $this->all_publications_sorted = $parts;
+            }
+        }
+
+        return $parts;
+    }
+
+    /**
+     * Get all published parts sorted as publications
      *
      * @param string|null $orderOption
      *
@@ -57,12 +79,12 @@ class Volume extends DataObject
     {
         if ($orderOption) {
             $publishedParts = $this->loadPublishedParts($orderOption);
-            $this->published_parts = $publishedParts;
+            $this->published_publications_sorted = $publishedParts;
         } else {
-            $publishedParts = $this->published_parts;
+            $publishedParts = $this->published_publications_sorted;
             if(empty($publishedParts)){
                 $publishedParts = $this->loadPublishedParts();
-                $this->published_parts = $publishedParts;
+                $this->published_publications_sorted = $publishedParts;
             }
         }
 
@@ -302,12 +324,9 @@ class Volume extends DataObject
         return $this;
 	}
 
-    private function loadPublishedParts( ?string $orderOption=null ): array
+    private function sortParts( ?string $orderOption=null ): array
     {
-        $submissions = $this->getParts();
-
-        /** @var Submission $submission */
-        $publishedSubmissions = array_filter($submissions, function($submission) { return $submission->getData('status') === PKPSubmission::STATUS_PUBLISHED; });
+        $submissions = $this->getSubmissions();
 
         // Sort option.
         if (!$orderOption) {
@@ -322,7 +341,7 @@ class Volume extends DataObject
         if($orderBy === VolumeDAO::ORDERBY_VOLUME_POSITION) {
             $positions = [];
             $publications = [];
-            foreach ($publishedSubmissions as $submission) {
+            foreach ($submissions as $submission) {
                 /** @var Publication $publication */
                 $publication = $submission->getCurrentPublication();
                 $positions[$submission->getId()]  = $publication->getData('volumePosition');
@@ -340,7 +359,7 @@ class Volume extends DataObject
         } elseif ($orderBy === Collector::ORDERBY_DATE_PUBLISHED) {
             $positions = [];
             $publications = [];
-            foreach ($publishedSubmissions as $submission) {
+            foreach ($submissions as $submission) {
                 /** @var Publication $publication */
                 $publication = $submission->getCurrentPublication();
 
@@ -365,7 +384,7 @@ class Volume extends DataObject
         } elseif ($orderBy === Collector::ORDERBY_TITLE) {
             $positions = [];
             $publications = [];
-            foreach ($publishedSubmissions as $submission) {
+            foreach ($submissions as $submission) {
                 /** @var Publication $publication */
                 $publication = $submission->getCurrentPublication();
                 $title = $publication->getLocalizedTitle();
@@ -432,5 +451,11 @@ class Volume extends DataObject
         }
 
         return $allSubmissions;
+    }
+
+    private function loadPublishedParts( ?string $orderOption=null ): array {
+        $submissions = $this->sortParts($orderOption);
+        /** @var Submission $submission */
+        return array_filter($submissions, function($submission) { return $submission->getData('status') === PKPSubmission::STATUS_PUBLISHED; });
     }
 }
