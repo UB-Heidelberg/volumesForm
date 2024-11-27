@@ -12,6 +12,9 @@ namespace APP\plugins\generic\volumesForm\classes;
 use APP\facades\Repo;
 use APP\publication\Publication;
 use APP\submission\Submission;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\DB;
 use PKP\core\DataObject;
 use PKP\plugins\Hook;
 use PKP\plugins\PluginRegistry;
@@ -301,6 +304,11 @@ class Volume extends DataObject
 
     private function loadPublishedParts( ?string $orderOption=null ): array
     {
+        $submissions = $this->getParts();
+
+        /** @var Submission $submission */
+        $publishedSubmissions = array_filter($submissions, function($submission) { return $submission->getData('status') === PKPSubmission::STATUS_PUBLISHED; });
+
         // Sort option.
         if (!$orderOption) {
             $orderOption = $this->getSortOption() ? $this->getSortOption() : Collector::ORDERBY_DATE_PUBLISHED . '-' . SORT_DIRECTION_DESC;
@@ -312,43 +320,57 @@ class Volume extends DataObject
         $hdSortCataloguePlugin = PluginRegistry::getPlugin('generic', 'hdsortcatalogueplugin');
 
         if($orderBy === VolumeDAO::ORDERBY_VOLUME_POSITION) {
-            $submissions = Repo::submission()
-                ->getCollector()
-                ->filterByContextIds([$this->getContextId()])
-                ->filterByStatus([PKPSubmission::STATUS_PUBLISHED])
-                ->getMany();
             $positions = [];
             $publications = [];
-            foreach ($submissions as $submission) {
-                $publication = $submission->getCurrentPublication();
-                if ((string) $publication->getData('volumeId') === (string) $this->getId()) {
-                    $positions[$submission->getId()]  = $publication->getData('volumePosition');
-                    $publications[$submission->getId()] = $publication;
-                }
-            }
-            asort($positions);
-            foreach ($positions as $key => $value) {
-                $positions[$key] = $publications[$key];
-            }
-            $publishedPublications = $positions;
-
-            if($orderDir === Collector::ORDER_DIR_DESC){
-                $publishedPublications = array_reverse($publishedPublications);
-            }
-        } elseif ($hdSortCataloguePlugin && $hdSortCataloguePlugin->getEnabled() && $orderBy === Collector::ORDERBY_DATE_PUBLISHED) {
-            $submissions = Repo::submission()
-                ->getCollector()
-                ->filterByContextIds([$this->getContextId()])
-                ->filterByStatus([PKPSubmission::STATUS_PUBLISHED])
-                ->getMany();
-            $positions = [];
-            $publications = [];
-            foreach ($submissions as $submission) {
+            foreach ($publishedSubmissions as $submission) {
                 /** @var Publication $publication */
                 $publication = $submission->getCurrentPublication();
-                if ((string) $publication->getData('volumeId') === (string) $this->getId()) {
+                $positions[$submission->getId()]  = $publication->getData('volumePosition');
+                $publications[$submission->getId()] = $publication;
+            }
+            asort($positions);
+            foreach ($positions as $key => $value) {
+                $positions[$key] = $publications[$key];
+            }
+            $publishedPublications = $positions;
+
+            if($orderDir === Collector::ORDER_DIR_DESC){
+                $publishedPublications = array_reverse($publishedPublications);
+            }
+        } elseif ($orderBy === Collector::ORDERBY_DATE_PUBLISHED) {
+            $positions = [];
+            $publications = [];
+            foreach ($publishedSubmissions as $submission) {
+                /** @var Publication $publication */
+                $publication = $submission->getCurrentPublication();
+
+                if ( $hdSortCataloguePlugin && $hdSortCataloguePlugin->getEnabled() ) {
                     $date = $publication->getData('hdSortCatalogue::sortDate') ?: $publication->getData('datePublished');
-                    $positions[$submission->getId()]  = $date;
+                } else {
+                    $date = $publication->getData('datePublished');
+                }
+
+                $positions[$submission->getId()]  = $date;
+                $publications[$submission->getId()] = $publication;
+            }
+            asort($positions);
+            foreach ($positions as $key => $value) {
+                $positions[$key] = $publications[$key];
+            }
+            $publishedPublications = $positions;
+
+            if($orderDir === Collector::ORDER_DIR_DESC){
+                $publishedPublications = array_reverse($publishedPublications);
+            }
+        } elseif ($orderBy === Collector::ORDERBY_TITLE) {
+            $positions = [];
+            $publications = [];
+            foreach ($publishedSubmissions as $submission) {
+                /** @var Publication $publication */
+                $publication = $submission->getCurrentPublication();
+                $title = $publication->getLocalizedTitle();
+                if ($title !== NULL) {
+                    $positions[$submission->getId()]  = $title;
                     $publications[$submission->getId()] = $publication;
                 }
             }
@@ -360,19 +382,6 @@ class Volume extends DataObject
 
             if($orderDir === Collector::ORDER_DIR_DESC){
                 $publishedPublications = array_reverse($publishedPublications);
-            }
-        } else {
-            $submissions = Repo::submission()
-                ->getCollector()
-                ->filterByContextIds([$this->getContextId()])
-                ->filterByStatus([PKPSubmission::STATUS_PUBLISHED])
-                ->orderBy($orderBy, $orderDir)
-                ->getMany();
-            foreach ($submissions as $submission) {
-                $publication = $submission->getCurrentPublication();
-                if ((string) $publication->getData('volumeId') === (string) $this->getId()) {
-                    $publishedPublications[] = $publication;
-                }
             }
         }
 
@@ -389,22 +398,39 @@ class Volume extends DataObject
         return $this->countPublishedParts() > 0;
     }
 
+    private function getPublicationIds(): array
+    {
+        $volume_id = $this->getId();
+        $publicationIds = [];
+        $sql = "SELECT publication_id FROM publication_settings WHERE setting_name = 'volumeId' AND setting_value = ?";
+        $params = [$this->getId()];
+        $result = DB::select(DB::raw($sql)->getValue(), $params);
+        foreach ($result as $object) {
+            $publicationIds[] = $object->publication_id;
+        }
+
+        return $publicationIds;
+    }
+
+
     private function loadParts(): array
     {
-        $submissions = [];
-        $allSubmissions = Repo::submission()
-            ->getCollector()
-            ->filterByContextIds([$this->getContextId()])
-            ->getMany();
+        $publicationIds = $this->getPublicationIds();
+        $allPublications = [];
+        foreach ($publicationIds as $publicationId) {
+            $allPublications[] = Repo::publication()->get($publicationId);
+        }
 
-        /** @var Submission $submission */
-        foreach ($allSubmissions as $submission) {
-            $publication = $submission->getCurrentPublication();
-            if ($publication && (string) $publication->getData('volumeId') === (string) $this->getId()) {
-                $submissions[] = $submission;
+        $allSubmissions = [];
+        foreach ($allPublications as $publication) {
+            $submission = Repo::submission()->get($publication->getData('submissionId'));
+            if ($submission->getData('contextId') === $this->getContextId()) {
+                if (!array_key_exists($submission->getId(), $allSubmissions)) {
+                    $allSubmissions[$submission->getId()] = $submission;
+                }
             }
         }
 
-        return $submissions;
+        return $allSubmissions;
     }
 }
