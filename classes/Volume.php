@@ -11,8 +11,8 @@ namespace APP\plugins\generic\volumesForm\classes;
 
 use APP\facades\Repo;
 use APP\publication\Publication;
-use APP\submission\Submission;
 use PKP\core\DataObject;
+use PKP\plugins\Hook;
 use PKP\plugins\PluginRegistry;
 use PKP\submission\Collector;
 use PKP\submission\PKPSubmission;
@@ -390,30 +390,26 @@ class Volume extends DataObject
 
     private function loadParts(): array
     {
+        Hook::add('Publication::Collector', function($hookName, $args) {
+            $q = & $args[0];
+            $q->join('publication_settings as ps', 'p.publication_id', '=', 'ps.publication_id');
+            $q->where('ps.setting_name', 'volumeId');
+        });
+
         $submissions = [];
-        $allSubmissions = Repo::submission()
-            ->getCollector()
+
+        $allPublications = Repo::publication()->getCollector()
             ->filterByContextIds([$this->getContextId()])
             ->getMany();
+        Hook::clear('Publication::Collector');
 
-        /** @var Submission $submission */
-        foreach ($allSubmissions as $submission) {
-            $publication = $submission->getCurrentPublication();
-            if ($publication && (string) $publication->getData('volumeId') === (string) $this->getId()) {
-                $submissions[] = $submission;
+        foreach ($allPublications as $publication) {
+            if ((string) $publication->getData('volumeId') === (string) $this->getId()) {
+                $submissions[] = Repo::submission()->get($publication->getId());
             }
         }
 
+
         return $submissions;
-    }
-
-    public function countParts(): int
-    {
-        return count($this->getParts());
-    }
-
-    public function hasParts(): bool
-    {
-        return $this->countParts() > 0;
     }
 }

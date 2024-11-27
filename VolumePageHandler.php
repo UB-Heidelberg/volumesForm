@@ -19,12 +19,10 @@ use APP\publication\Publication;
 use APP\submission\Submission;
 use APP\template\TemplateManager;
 use PKP\config\Config;
-use PKP\core\PKPApplication;
 use PKP\core\PKPRequest;
 use PKP\db\DAORegistry;
 use PKP\plugins\PluginRegistry;
 use PKP\security\Role;
-use PKP\submission\PKPSubmission;
 use PKP\userGroup\UserGroup;
 
 class VolumePageHandler extends Handler
@@ -82,19 +80,16 @@ class VolumePageHandler extends Handler
         $volume = $volumeDao->getByPath($volumePath, $contextId);
         $volumeId = $volume->getData('id');
 
-        // OR
-        // Serve 404 if volume has no parts
-        if (!$volume->hasParts()) {
-            $request->getDispatcher()->handle404();
-        }
-        // Serve 404 if all parts are unpublished and no user is logged in
-        // OR all parts are unpublished and we have a user logged in but the user does not have access to preview at least one part
-        $user = $request->getUser();
-        if (!$volume->hasPublishedParts()) {
+
+        // Serve 404 or a preview if all parts are unpublished
+        if (!$volume->hasPublishedParts() ) {
+            // Serve 404 if all parts are unpublished and no user is logged in
+            $user = $request->getUser();
             if (!$user) {
                 $request->getDispatcher()->handle404();
             }
 
+            // Serve 404 if all parts are unpublished and we have a user logged in but the user does not have access to preview at least one part
             $userCanPreview = false;
             /** @var Submission $submission */
             foreach ($volume->getParts() as $submission) {
@@ -103,12 +98,11 @@ class VolumePageHandler extends Handler
                     break;
                 }
             }
-
             if (!$userCanPreview) {
                 $request->getDispatcher()->handle404();
             }
-
         }
+
 
         // Get all published submissions which are part of a certain volume. Also collect editors, authors and series.
         $publishedPublications = $volume->getPublishedParts();
