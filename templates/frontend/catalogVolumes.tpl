@@ -38,13 +38,6 @@
              {/if}
              {if count($authors) > 0}
                  <div class="sub_item authors">
-                     <h3 class="label">
-                         {if count($authors) > 1}
-                             {translate key="plugins.generic.volumesForm.catalog.authors"}
-                         {else}
-                             {translate key="plugins.generic.volumesForm.catalog.author"}
-                         {/if}
-                     </h3>
                      {foreach name="authors" from=$authors item=author}
                          {strip}
                              <span class="label">{$author|escape}</span>
